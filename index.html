@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base Allocation Estimator | SMLT</title>
+<meta property="og:title" content="Base Airdrop SMLT Estimator">
+<meta property="og:description" content="Estimate your potential BASE allocation based on on-chain activity. Unofficial estimator tool.">
+<meta property="og:image" content="https://base-checker-kiw.netlify.app/og.png">
+<meta property="og:url" content="https://base-checker-kiw.netlify.app">
+<meta name="fc:frame" content="vNext">
+<meta name="fc:frame:image" content="https://base-checker-kiw.netlify.app/og.png">
+<meta name="fc:frame:button:1" content="Check Wallet">
+<meta name="fc:frame:post_url" content="https://base-checker-kiw.netlify.app">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Courier New',Courier,monospace}
+:root{--bg:#d0e8ff;--card:#ffffff;--text:#1a2a3a;--text2:#3a5a7a;--accent:#4a90d9;--accent2:#2a6fb0;--border:#b0c8e0;--shadow:rgba(0,0,0,0.08);--input-bg:#f0f6ff;--pixel:#c0d8f0;--toggle-bg:#e0ecf8;--toggle-text:#2a5a8a}
+body.dark{--bg:#0a1628;--card:#111d30;--text:#c8d8e8;--text2:#7a9ab8;--accent:#5a9ae0;--accent2:#3a7ac0;--border:#1a2a40;--shadow:rgba(0,0,0,0.4);--input-bg:#0e1a2c;--pixel:#152238;--toggle-bg:#1a2a40;--toggle-text:#8ab4e8}
+body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:20px;transition:background .3s,color .3s}
+.container{max-width:520px;width:100%}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 16px;background:var(--card);border:2px solid var(--border);border-radius:0;box-shadow:4px 4px 0 var(--shadow);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 4px,var(--pixel) 4px,var(--pixel) 5px);opacity:0.15;pointer-events:none}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;border:2px solid var(--accent2);image-rendering:pixelated;box-shadow:2px 2px 0 var(--accent2)}
+.logo-text{display:flex;flex-direction:column}
+.logo-text h1{font-size:14px;font-weight:bold;line-height:1.2;color:var(--text)}
+.logo-text h1 span{color:var(--accent)}
+.logo-text small{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.toggle-btn{padding:6px 12px;font-size:11px;font-weight:bold;border:2px solid var(--border);background:var(--toggle-bg);color:var(--toggle-text);cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:2px 2px 0 var(--shadow);transition:all .15s;font-family:'Courier New',monospace}
+.toggle-btn:active{transform:translate(2px,2px);box-shadow:none}
+.card{background:var(--card);border:2px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:4px 4px 0 var(--shadow);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 4px,var(--pixel) 4px,var(--pixel) 5px);opacity:0.08;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.input-group{display:flex;flex-direction:column;gap:6px}
+.input-group label{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:var(--text2)}
+.input-row{display:flex;gap:8px}
+.input-row input{flex:1;padding:10px 12px;font-size:13px;border:2px solid var(--border);background:var(--input-bg);color:var(--text);outline:none;font-family:'Courier New',monospace;transition:border .2s}
+.input-row input:focus{border-color:var(--accent)}
+.input-row input::placeholder{color:var(--text2);opacity:0.6}
+.btn-check{padding:10px 20px;font-size:13px;font-weight:bold;border:2px solid var(--accent2);background:var(--accent);color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:3px 3px 0 var(--accent2);transition:all .15s;font-family:'Courier New',monospace;white-space:nowrap}
+.btn-check:active{transform:translate(3px,3px);box-shadow:none}
+.btn-check:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--accent2)}
+.info-badge{display:flex;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;background:var(--input-bg);border:1px solid var(--border);font-size:10px;color:var(--text2)}
+.info-badge i{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);color:#fff;font-size:9px;font-weight:bold;font-style:normal;border:1px solid var(--accent2)}
+.section-title{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.setting-item{display:flex;flex-direction:column;gap:4px}
+.setting-item label{font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)}
+.setting-item select{padding:8px;font-size:12px;border:2px solid var(--border);background:var(--input-bg);color:var(--text);outline:none;cursor:pointer;font-family:'Courier New',monospace;transition:border .2s}
+.setting-item select:focus{border-color:var(--accent)}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.result-item{padding:10px;background:var(--input-bg);border:1px solid var(--border);text-align:center}
+.result-item .label{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:4px}
+.result-item .value{font-size:16px;font-weight:bold;color:var(--accent)}
+.result-item .value.small{font-size:13px}
+.result-item.full{grid-column:1/-1}
+.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.activity-item{padding:8px;background:var(--input-bg);border:1px solid var(--border);text-align:center}
+.activity-item .label{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:2px}
+.activity-item .value{font-size:14px;font-weight:bold;color:var(--text)}
+.disclaimer{margin-top:12px;padding:10px;background:var(--input-bg);border:1px solid var(--border);font-size:9px;color:var(--text2);line-height:1.5;text-align:center}
+.footer{display:flex;justify-content:center;gap:16px;margin-top:12px;padding:10px;font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.footer a{color:var(--accent);text-decoration:none;font-weight:bold}
+.footer a:hover{text-decoration:underline}
+.loading{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">B</div>
+      <div class="logo-text">
+        <h1>Base Airdrop <span>SMLT</span> Estimator</h1>
+        <small>Hypothetical</small>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <a href="https://x.com/boygc_?s=21" target="_blank" style="display:flex;align-items:center;gap:4px;padding:6px 10px;font-size:11px;font-weight:bold;border:2px solid var(--border);background:var(--toggle-bg);color:var(--toggle-text);text-decoration:none;text-transform:uppercase;letter-spacing:1px;box-shadow:2px 2px 0 var(--shadow);transition:all .15s;font-family:'Courier New',monospace">𝕏</a>
+      <button class="toggle-btn" id="themeToggle">☾ Dark</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="input-group">
+      <label>Public Base Address</label>
+      <div class="input-row">
+        <input type="text" id="walletInput" placeholder="Paste 0x wallet address" spellcheck="false">
+        <button class="btn-check" id="checkBtn">🔍 CHECK</button>
+      </div>
+      <div class="info-badge"><i>i</i> Reads public Base activity only. Never connect a wallet or sign here.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Model Settings</div>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <label>FDV Scenario</label>
+        <select id="fdvSelect">
+          <option value="2">$2B</option>
+          <option value="4" selected>$4B</option>
+          <option value="6">$6B</option>
+          <option value="8">$8B</option>
+          <option value="10">$10B</option>
+          <option value="12">$12B</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>Token Supply</label>
+        <select id="supplySelect">
+          <option value="1">1B tokens</option>
+          <option value="5">5B tokens</option>
+          <option value="10" selected>10B tokens</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>Airdrop Pool</label>
+        <select id="poolSelect">
+          <option value="2.5">2.5% of supply</option>
+          <option value="5" selected>5% of supply</option>
+          <option value="10">10% of supply</option>
+          <option value="15">15% of supply</option>
+          <option value="20">20% of supply</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>Recipients</label>
+        <select id="recipientsSelect">
+          <option value="50000">50K users</option>
+          <option value="100000">100K users</option>
+          <option value="200000">200K users</option>
+          <option value="500000" selected>500K users</option>
+          <option value="1000000">1M users</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="section-title">Your Estimate</div>
+    <div class="result-grid">
+      <div class="result-item full">
+        <div class="label">You could receive</div>
+        <div class="value" id="estBase">-- BASE</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Estimated value</div>
+        <div class="value small" id="estUsdt">-- USDT</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Token Price</div>
+        <div class="value small" id="tokenPrice">0.40 USDT</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Average Share</div>
+        <div class="value small" id="avgShare">1,000 BASE</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Activity Score</div>
+        <div class="value small" id="activityScore">--</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Model Weight</div>
+        <div class="value small" id="modelWeight">--</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Observed Activity</div>
+    <div class="activity-grid">
+      <div class="activity-item">
+        <div class="label">Transactions</div>
+        <div class="value" id="txCount">--</div>
+      </div>
+      <div class="activity-item">
+        <div class="label">Active Days</div>
+        <div class="value" id="activeDays">--</div>
+      </div>
+      <div class="activity-item">
+        <div class="label">Contracts</div>
+        <div class="value" id="contracts">--</div>
+      </div>
+      <div class="activity-item">
+        <div class="label">ETH Balance</div>
+        <div class="value" id="ethBalance">--</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">Activity is read from the Base public explorer API. Token supply, airdrop pool, recipients and distribution weighting are user-selected assumptions, not official Base information or financial advice.</div>
+
+  <div class="footer">
+    <span>UNOFFICIAL · ESTIMATE ONLY</span>
+    <a href="https://basescan.org/" target="_blank">⇅ BaseScan</a>
+    <a href="https://docs.base.org/" target="_blank">◎ Docs</a>
+  </div>
+</div>
+
+<script>
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  themeToggle.textContent = document.body.classList.contains('dark') ? '☀ Light' : '☾ Dark';
+});
+
+const walletInput = document.getElementById('walletInput');
+const checkBtn = document.getElementById('checkBtn');
+const fdvSelect = document.getElementById('fdvSelect');
+const supplySelect = document.getElementById('supplySelect');
+const poolSelect = document.getElementById('poolSelect');
+const recipientsSelect = document.getElementById('recipientsSelect');
+
+const estBase = document.getElementById('estBase');
+const estUsdt = document.getElementById('estUsdt');
+const tokenPrice = document.getElementById('tokenPrice');
+const avgShare = document.getElementById('avgShare');
+const activityScore = document.getElementById('activityScore');
+const modelWeight = document.getElementById('modelWeight');
+const txCount = document.getElementById('txCount');
+const activeDays = document.getElementById('activeDays');
+const contracts = document.getElementById('contracts');
+const ethBalance = document.getElementById('ethBalance');
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+const BASESCAN_API_KEY = 'XYAH8J3VS4R7SQ9AUV9E238UXC6W6E88XS';
+const BASESCAN_API = 'https://api.basescan.org/api';
+
+async function fetchRealActivity(address) {
+  try {
+    const txRes = await fetch(`${BASESCAN_API}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${BASESCAN_API_KEY}`);
+    const txData = await txRes.json();
+    const txList = txData.status === '1' ? txData.result : [];
+    
+    const intRes = await fetch(`${BASESCAN_API}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${BASESCAN_API_KEY}`);
+    const intData = await intRes.json();
+    const intList = intData.status === '1' ? intData.result : [];
+    
+    const ercRes = await fetch(`${BASESCAN_API}?module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${BASESCAN_API_KEY}`);
+    const ercData = await ercRes.json();
+    const ercList = ercData.status === '1' ? ercData.result : [];
+    
+    const balRes = await fetch(`${BASESCAN_API}?module=account&action=balance&address=${address}&tag=latest&apikey=${BASESCAN_API_KEY}`);
+    const balData = await balRes.json();
+    const ethBal = balData.status === '1' ? parseFloat(balData.result) / 1e18 : 0;
+    
+    const allTxs = [...txList, ...intList];
+    const uniqueContracts = new Set();
+    allTxs.forEach(tx => {
+      if (tx.to && tx.to !== address) uniqueContracts.add(tx.to.toLowerCase());
+    });
+    
+    const timestamps = allTxs.map(tx => parseInt(tx.timeStamp));
+    const uniqueDays = new Set(timestamps.map(ts => Math.floor(ts / 86400)));
+    
+    const totalTx = txList.length + intList.length + ercList.length;
+    
+    return {
+      tx: totalTx,
+      days: uniqueDays.size || 1,
+      ctr: uniqueContracts.size || 0,
+      eth: ethBal.toFixed(4)
+    };
+  } catch (err) {
+    console.error('BaseScan API error:', err);
+    return null;
+  }
+}
+
+function calcScore(act) {
+  const txScore = Math.min(act.tx / 500, 1) * 40;
+  const dayScore = Math.min(act.days / 180, 1) * 25;
+  const ctrScore = Math.min(act.ctr / 30, 1) * 20;
+  const ethScore = Math.min(parseFloat(act.eth) / 5, 1) * 15;
+  return Math.round(txScore + dayScore + ctrScore + ethScore);
+}
+
+function calcWeight(score) {
+  if (score >= 85) return 'High';
+  if (score >= 60) return 'Medium-High';
+  if (score >= 40) return 'Medium';
+  if (score >= 20) return 'Low-Medium';
+  return 'Low';
+}
+
+checkBtn.addEventListener('click', () => {
+  const addr = walletInput.value.trim();
+  if (!addr || addr.length < 10) {
+    estBase.textContent = 'Invalid address';
+    estUsdt.textContent = '-- USDT';
+    return;
+  }
+
+  checkBtn.disabled = true;
+  checkBtn.textContent = '⏳ SCANNING';
+  estBase.textContent = '...';
+  estUsdt.textContent = '...';
+
+  (async () => {
+    const act = await fetchRealActivity(addr);
+    if (!act) {
+      estBase.textContent = 'API Error';
+      estUsdt.textContent = '-- USDT';
+      txCount.textContent = 'Error';
+      activeDays.textContent = 'Error';
+      contracts.textContent = 'Error';
+      ethBalance.textContent = 'Error';
+      checkBtn.disabled = false;
+      checkBtn.textContent = '🔍 CHECK';
+      return;
+    }
+
+    const score = calcScore(act);
+    const weight = calcWeight(score);
+
+    const fdv = parseFloat(fdvSelect.value);
+    const supply = parseFloat(supplySelect.value);
+    const poolPct = parseFloat(poolSelect.value);
+    const recipients = parseFloat(recipientsSelect.value);
+
+    const poolTokens = (supply * poolPct / 100) * 1e9;
+    const avgPerWallet = poolTokens / recipients;
+    const price = fdv / supply;
+    const weightMult = score / 100;
+    const userEst = Math.round(avgPerWallet * weightMult * (0.8 + Math.random() * 0.4));
+    const userUsdt = (userEst * price).toFixed(2);
+
+    txCount.textContent = formatNum(act.tx);
+    activeDays.textContent = act.days;
+    contracts.textContent = act.ctr;
+    ethBalance.textContent = act.eth + ' ETH';
+
+    estBase.textContent = userEst.toLocaleString() + ' BASE';
+    estUsdt.textContent = '$' + parseFloat(userUsdt).toLocaleString() + ' USDT';
+    tokenPrice.textContent = '$' + price.toFixed(2) + ' USDT';
+    avgShare.textContent = Math.round(avgPerWallet).toLocaleString() + ' BASE';
+    activityScore.textContent = score + '/100';
+    modelWeight.textContent = weight;
+
+    checkBtn.disabled = false;
+    checkBtn.textContent = '🔍 CHECK';
+  })();
+});
+</script>
+</body>
+</html>
